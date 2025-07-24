@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Exchange Advisor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --bot-bubble: #e9ecef;
+            --user-bubble: #4361ee;
+            --user-text: white;
+        }
+
+        .dark-theme {
+            --primary-color: #7209b7;
+            --secondary-color: #560bad;
+            --bg-color: #212529;
+            --text-color: #f8f9fa;
+            --bot-bubble: #343a40;
+            --user-bubble: #7209b7;
+            --user-text: white;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .theme-toggle {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-container {
+            background-color: var(--bg-color);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+
+        .bot-message {
+            background-color: var(--bot-bubble);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user-message {
+            background-color: var(--user-bubble);
+            color: var(--user-text);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border-top: 1px solid #ddd;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .currency-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .flag {
+            font-size: 24px;
+        }
+
+        .rate-card {
+            background-color: var(--bot-bubble);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .rate-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .time-suggestion {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-left: 4px solid var(--primary-color);
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .up {
+            color: #2ecc71;
+        }
+
+        .down {
+            color: #e74c3c;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .currency-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        select {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        .disclaimer {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 15px;
+            padding: 10px;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Currency Exchange Advisor</h1>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i> Dark Mode
+            </button>
+        </header>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                Get the best time to exchange currencies
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    Hi there! 👋 I can help you find the best time to exchange currencies. 
+                    <div style="margin-top: 10px;">
+                        Please select the currencies you want to exchange:
+                    </div>
+                    
+                    <div class="currency-selector" style="margin-top: 15px;">
+                        <select id="fromCurrency">
+                            <option value="">From Currency</option>
+                            <option value="USD">🇺🇸 US Dollar (USD)</option>
+                            <option value="EUR">🇪🇺 Euro (EUR)</option>
+                            <option value="GBP">🇬🇧 British Pound (GBP)</option>
+                            <option value="JPY">🇯🇵 Japanese Yen (JPY)</option>
+                            <option value="AUD">🇦🇺 Australian Dollar (AUD)</option>
+                            <option value="CAD">🇨🇦 Canadian Dollar (CAD)</option>
+                            <option value="CHF">🇨🇭 Swiss Franc (CHF)</option>
+                            <option value="CNY">🇨🇳 Chinese Yuan (CNY)</option>
+                            <option value="INR">🇮🇳 Indian Rupee (INR)</option>
+                        </select>
+                        
+                        <select id="toCurrency">
+                            <option value="">To Currency</option>
+                            <option value="USD">🇺🇸 US Dollar (USD)</option>
+                            <option value="EUR">🇪🇺 Euro (EUR)</option>
+                            <option value="GBP">🇬🇧 British Pound (GBP)</option>
+                            <option value="JPY">🇯🇵 Japanese Yen (JPY)</option>
+                            <option value="AUD">🇦🇺 Australian Dollar (AUD)</option>
+                            <option value="CAD">🇨🇦 Canadian Dollar (CAD)</option>
+                            <option value="CHF">🇨🇭 Swiss Franc (CHF)</option>
+                            <option value="CNY">🇨🇳 Chinese Yuan (CNY)</option>
+                            <option value="INR">🇮🇳 Indian Rupee (INR)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off">
+                <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-theme');
+            if (body.classList.contains('dark-theme')) {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            }
+        });
+
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const fromCurrency = document.getElementById('fromCurrency');
+        const toCurrency = document.getElementById('toCurrency');
+
+        // Currency data with flags and countries
+        const currencyData = {
+            "USD": { flag: "🇺🇸", name: "US Dollar", country: "United States" },
+            "EUR": { flag: "🇪🇺", name: "Euro", country: "European Union" },
+            "GBP": { flag: "🇬🇧", name: "British Pound", country: "United Kingdom" },
+            "JPY": { flag: "🇯🇵", name: "Japanese Yen", country: "Japan" },
+            "AUD": { flag: "🇦🇺", name: "Australian Dollar", country: "Australia" },
+            "CAD": { flag: "🇨🇦", name: "Canadian Dollar", country: "Canada" },
+            "CHF": { flag: "🇨🇭", name: "Swiss Franc", country: "Switzerland" },
+            "CNY": { flag: "🇨🇳", name: "Chinese Yuan", country: "China" },
+            "INR": { flag: "🇮🇳", name: "Indian Rupee", country: "India" }
+        };
+
+        // Keywords related to currency exchange
+        const currencyKeywords = [
+            'exchange', 'currency', 'rate', 'convert', 'forex', 'money', 
+            'dollar', 'euro', 'pound', 'yen', 'rupee', 'transfer',
+            'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR'
+        ];
+
+        // Check if message is related to currency exchange
+        function isCurrencyRelated(message) {
+            const lowerMsg = message.toLowerCase();
+            return currencyKeywords.some(keyword => lowerMsg.includes(keyword.toLowerCase()));
+        }
+
+        // Sample API response processor
+        function processExchangeData(fromCurr, toCurr, data) {
+            // In a real app, you would use the actual API response
+            // This is a mock response for demonstration
+            
+            const fromData = currencyData[fromCurr] || { flag: "", name: fromCurr, country: "" };
+            const toData = currencyData[toCurr] || { flag: "", name: toCurr, country: "" };
+            
+            // Generate random rates for demo
+            const currentRate = (Math.random() * 0.5 + 0.5).toFixed(4);
+            const weeklyHigh = (parseFloat(currentRate) + Math.random() * 0.1).toFixed(4);
+            const weeklyLow = (parseFloat(currentRate) - Math.random() * 0.1).toFixed(4);
+            const bestDay = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][Math.floor(Math.random() * 5)];
+            const bestTime = `${Math.floor(Math.random() * 4) + 9}:00-${Math.floor(Math.random() * 4) + 13}:00`;
+            const trend = Math.random() > 0.5 ? "upward" : "downward";
+            
+            let message = `
+                <div class="currency-info">
+                    <span class="flag">${fromData.flag}</span>
+                    <span>${fromData.name} (${fromCurr}) →</span>
+                    <span class="flag">${toData.flag}</span>
+                    <span>${toData.name} (${toCurr})</span>
+                </div>
+                
+                <div class="rate-card">
+                    <div><strong>Current rate:</strong> <span class="rate-value">1 ${fromCurr} = ${currentRate} ${toCurr}</span></div>
+                    <div><strong>Weekly high:</strong> ${weeklyHigh} (on ${bestDay})</div>
+                    <div><strong>Weekly low:</strong> ${weeklyLow}</div>
+                </div>
+                
+                <div class="time-suggestion">
+                    <strong>Best time to exchange:</strong> Usually ${bestTime} on ${bestDay}s when market is most active.
+                </div>
+                
+                <div class="trend-indicator">
+                    <span>Trend:</span>
+                    <span class="${trend === 'upward' ? 'up' : 'down'}">
+                        ${trend === 'upward' ? '↗ Upward' : '↘ Downward'}
+                        <i class="fas fa-arrow-${trend === 'upward' ? 'up' : 'down'}"></i>
+                    </span>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    ${trend === 'downward' ? 
+                        "Good time to exchange now as rates are dropping." : 
+                        "You might want to wait as rates are rising."}
+                </div>
+                
+                <div class="disclaimer">
+                    <i class="fas fa-info-circle"></i> Note: These are simulated rates for demonstration purposes only.
+                </div>
+            `;
+            
+            return message;
+        }
+
+        // Add message to chat
+        function addMessage(sender, message, isHTML = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            if (isHTML) {
+                messageDiv.innerHTML = message;
+            } else {
+                messageDiv.textContent = message;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show loading indicator
+        function showLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot-message';
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.innerHTML = '<div class="loading"></div>';
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return loadingDiv;
+        }
+
+        // Hide loading indicator
+        function hideLoading(loadingDiv) {
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        // Handle user input
+        function handleUserInput() {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage('user', message);
+                userInput.value = '';
+                
+                // Show loading
+                const loading = showLoading();
+                
+                // Simulate API delay
+                setTimeout(() => {
+                    hideLoading(loading);
+                    
+                    // Check if the message is related to currency exchange
+                    if (!isCurrencyRelated(message)) {
+                        addMessage('bot', "I'm sorry, I can only help with currency exchange related queries. Please ask me about exchange rates, currency conversion, or the best time to exchange currencies.");
+                        return;
+                    }
+                    
+                    // Check if both currencies are selected
+                    if (fromCurrency.value && toCurrency.value) {
+                        // Process the exchange data (in real app, call API here)
+                        const exchangeInfo = processExchangeData(fromCurrency.value, toCurrency.value, {});
+                        addMessage('bot', exchangeInfo, true);
+                    } else {
+                        addMessage('bot', "Please select both currencies to compare. Choose 'From' and 'To' currencies from the dropdowns above.");
+                    }
+                }, 1500);
+            }
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', handleUserInput);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUserInput();
+            }
+        });
+
+        // Currency selection change
+        fromCurrency.addEventListener('change', () => {
+            if (fromCurrency.value && toCurrency.value) {
+                const loading = showLoading();
+                setTimeout(() => {
+                    hideLoading(loading);
+                    const exchangeInfo = processExchangeData(fromCurrency.value, toCurrency.value, {});
+                    addMessage('bot', exchangeInfo, true);
+                }, 1000);
+            }
+        });
+
+        toCurrency.addEventListener('change', () => {
+            if (fromCurrency.value && toCurrency.value) {
+                const loading = showLoading();
+                setTimeout(() => {
+                    hideLoading(loading);
+                    const exchangeInfo = processExchangeData(fromCurrency.value, toCurrency.value, {});
+                    addMessage('bot', exchangeInfo, true);
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
